@@ -1,18 +1,13 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import tensorflow_hub as hub
-import tensorflow as tf
 import numpy as np
 import cv2
 from PIL import Image, ImageTk
 import threading
+from process_image import ProcessImage
 
 # Main application class
-class StyleTransferApp:
-    # Load the pre-trained model from TensorFlow Hub
-    hub_handle = 'https://tfhub.dev/google/magenta/arbitrary-image-stylization-v1-256/2'
-    hub_module = hub.load(hub_handle)
-
+class StyleTransferApp(ProcessImage):
     def __init__(self, root):
         self.root = root
         self.root.title("Real-Time Style Transfer")
@@ -37,23 +32,6 @@ class StyleTransferApp:
 
         self.canvas = tk.Canvas(self.root, width=640, height=480, bg="black")
         self.canvas.pack(pady=10)
-
-    # Style transfer function with softer effect
-    def apply_style_transfer(self, content_image, style_image, alpha=0.5):
-        content_tensor = tf.convert_to_tensor(content_image, dtype=tf.float32)
-        style_tensor = tf.convert_to_tensor(style_image, dtype=tf.float32)
-        content_tensor = tf.expand_dims(content_tensor, axis=0)
-        style_tensor = tf.expand_dims(style_tensor, axis=0)
-        outputs = self.hub_module(content_tensor, style_tensor)
-        stylized_image = outputs[0].numpy()[0]
-        # Blend the original content image with the stylized image
-        blended_image = alpha * stylized_image + (1 - alpha) * content_image
-        return blended_image
-    
-    # Preprocess image
-    def preprocess_image(self, image, target_size=(256, 256)):
-        resized_image = cv2.resize(image, target_size)
-        return resized_image / 255.0  # Normalize to [0, 1]
 
     def load_style_image(self):
         file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg *.jpeg *.png")])
